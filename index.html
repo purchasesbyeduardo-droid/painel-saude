@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Painel de Saúde</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="theme-color" content="#FF6B5B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Painel Saúde">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F0F6EF;
+    --paper:#FFFFFF;
+    --ink:#1C2B2A;
+    --ink-soft:#5A6E6A;
+    --ink-faint:#8DA09C;
+    --coral:#FF6B5B;
+    --coral-dark:#E1503F;
+    --coral-tint:#FFE4DF;
+    --teal:#2A6F6B;
+    --teal-dark:#1B4C49;
+    --teal-tint:#DCEEEB;
+    --gold:#F0AA2E;
+    --gold-dark:#C4870E;
+    --gold-tint:#FCEBC7;
+    --plum:#8E7BC0;
+    --plum-dark:#6D5A9E;
+    --plum-tint:#E9E3F7;
+    --sky:#3F98BE;
+    --sky-dark:#2A7391;
+    --sky-tint:#DBEEF4;
+    --line:#DCE6DD;
+    --shadow:rgba(28,43,42,0.10);
+    --shadow-strong:rgba(28,43,42,0.20);
+    --radius:18px;
+    --radius-sm:12px;
+    --font-display:'Baloo 2', system-ui, sans-serif;
+    --font-body:'Nunito Sans', system-ui, sans-serif;
+    --font-mono:'Space Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255,107,91,0.06), transparent 45%),
+      radial-gradient(circle at 0% 100%, rgba(63,152,190,0.07), transparent 45%),
+      var(--bg);
+    min-height:100vh;
+    font-family:var(--font-body);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  h1,h2,h3,.display{font-family:var(--font-display);}
+
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;font-size:15px;}
+
+  :focus-visible{
+    outline:3px solid var(--teal);
+    outline-offset:2px;
+    border-radius:4px;
+  }
+
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--ink-faint);border-radius:8px;}
+
+  /* ===== layout shell ===== */
+  #app{max-width:920px;margin:0 auto;padding:20px 18px 80px;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin-bottom:20px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-badge{
+    width:44px;height:44px;border-radius:14px;
+    background:linear-gradient(135deg,var(--coral),var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;box-shadow:0 4px 10px var(--shadow-strong);
+    transform:rotate(-4deg);
+    flex-shrink:0;
+  }
+  .brand h1{font-size:22px;margin:0;line-height:1.1;color:var(--ink);}
+  .brand span{display:block;font-family:var(--font-body);font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-top:2px;}
+
+  .btn{
+    border:none;border-radius:999px;padding:10px 18px;font-weight:800;
+    font-size:14px;display:inline-flex;align-items:center;gap:6px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:active{transform:scale(0.96);}
+  .btn-primary{background:var(--coral);color:#fff;box-shadow:0 4px 10px rgba(255,107,91,0.35);}
+  .btn-primary:hover{background:var(--coral-dark);}
+  .btn-ghost{background:var(--paper);color:var(--ink);border:2px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--teal);color:var(--teal);}
+  .btn-teal{background:var(--teal);color:#fff;box-shadow:0 4px 10px rgba(42,111,107,0.3);}
+  .btn-teal:hover{background:var(--teal-dark);}
+  .btn-sm{padding:7px 13px;font-size:12.5px;border-radius:999px;}
+  .btn-icon{
+    width:38px;height:38px;border-radius:50%;background:var(--paper);
+    border:2px solid var(--line);display:flex;align-items:center;justify-content:center;
+    font-size:16px;padding:0;
+  }
+  .btn-icon:hover{border-color:var(--coral);}
+  .btn-danger-text{background:none;border:none;color:var(--coral-dark);font-weight:700;font-size:13px;padding:6px 4px;}
+
+  /* ===== folder tabs (people) ===== */
+  .people-row{
+    display:flex;align-items:flex-end;gap:6px;overflow-x:auto;
+    padding:6px 4px 0;margin-bottom:-1px;position:relative;z-index:1;
+    scrollbar-width:thin;
+  }
+  .person-tab{
+    position:relative;
+    border:none;
+    clip-path: polygon(9% 0, 91% 0, 100% 100%, 0% 100%);
+    padding:12px 26px 10px;
+    font-family:var(--font-display);
+    font-weight:700;font-size:15px;
+    color:var(--ink-soft);
+    background:#E4EDE3;
+    white-space:nowrap;
+    flex-shrink:0;
+    transition:transform .18s ease, background .18s ease, color .18s ease;
+    display:flex;align-items:center;gap:8px;
+  }
+  .person-tab .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .person-tab:hover{transform:translateY(-2px);}
+  .person-tab.active{
+    background:var(--paper);
+    color:var(--ink);
+    transform:translateY(-2px);
+    box-shadow:0 -4px 10px var(--shadow);
+  }
+  .person-tab-add{
+    clip-path:none;border-radius:14px 14px 0 0;
+    background:transparent;border:2px dashed var(--ink-faint);
+    color:var(--ink-soft);padding:10px 16px;font-weight:700;
+  }
+  .person-tab-add:hover{border-color:var(--coral);color:var(--coral-dark);}
+
+  .content-card{
+    background:var(--paper);border-radius:var(--radius);
+    box-shadow:0 6px 22px var(--shadow);position:relative;z-index:0;
+    padding:22px;
+  }
+
+  /* ===== section tabs ===== */
+  .section-tabs{
+    display:flex;gap:4px;margin-bottom:18px;border-bottom:2px solid var(--line);
+    overflow-x:auto;
+  }
+  .section-tab{
+    background:none;border:none;padding:10px 14px 12px;font-weight:800;
+    font-size:14.5px;color:var(--ink-faint);border-bottom:3px solid transparent;
+    margin-bottom:-2px;white-space:nowrap;display:flex;gap:7px;align-items:center;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .section-tab:hover{color:var(--ink-soft);}
+  .section-tab.active{color:var(--teal-dark);border-bottom-color:var(--coral);}
+
+  .section-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .section-header h2{font-size:19px;margin:0;color:var(--ink);}
+  .section-header p{margin:2px 0 0;font-size:13px;color:var(--ink-soft);font-weight:600;}
+
+  .search-row{position:relative;margin-bottom:16px;}
+  .search-row .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:0.7;}
+  .search-input{
+    width:100%;padding:11px 14px 11px 36px;border:2px solid var(--line);border-radius:999px;
+    background:#FAFBF9;font-weight:600;font-size:14px;color:var(--ink);
+  }
+  .search-input:focus{border-color:var(--teal);background:#fff;}
+  .search-input::placeholder{color:var(--ink-faint);font-weight:600;}
+  .link-badge{
+    display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;
+    background:var(--sky-tint);color:var(--sky-dark);font-size:11.5px;font-weight:800;margin-top:6px;
+  }
+
+  /* ===== empty state ===== */
+  .empty-state{
+    text-align:center;padding:46px 20px;border:2px dashed var(--line);
+    border-radius:var(--radius-sm);color:var(--ink-soft);
+  }
+  .empty-state .emoji{font-size:38px;display:block;margin-bottom:10px;}
+  .empty-state h3{margin:0 0 6px;color:var(--ink);font-size:17px;}
+  .empty-state p{margin:0 0 16px;font-size:14px;}
+
+  /* ===== list cards ===== */
+  .list{display:flex;flex-direction:column;gap:12px;}
+  .item-card{
+    border:2px solid var(--line);border-radius:var(--radius-sm);
+    padding:14px 16px;display:flex;gap:14px;align-items:flex-start;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .item-card:hover{border-color:var(--ink-faint);}
+  .item-icon{
+    width:42px;height:42px;border-radius:12px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:19px;
+  }
+  .item-main{flex:1;min-width:0;}
+  .item-title{font-weight:800;font-size:15px;color:var(--ink);margin:0 0 2px;}
+  .item-sub{font-size:13px;color:var(--ink-soft);font-weight:600;margin:0;}
+  .item-meta{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
+  .item-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;}
+
+  .badge{
+    display:inline-flex;align-items:center;gap:5px;padding:4px 11px;
+    border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.2px;
+  }
+  .badge-teal{background:var(--teal-tint);color:var(--teal-dark);}
+  .badge-gold{background:var(--gold-tint);color:var(--gold-dark);}
+  .badge-coral{background:var(--coral-tint);color:var(--coral-dark);}
+  .badge-muted{background:#EDEFEC;color:var(--ink-soft);}
+
+  /* ===== lembretes ===== */
+  .lembrete-card{
+    border:2px solid var(--line);border-radius:var(--radius-sm);padding:16px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .lembrete-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .lembrete-top h3{margin:0;font-size:16px;}
+  .lembrete-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:6px;}
+  .progress-track{height:8px;border-radius:99px;background:#EDEFEC;overflow:hidden;margin-top:8px;}
+  .progress-fill{height:100%;border-radius:99px;transition:width .4s ease;}
+
+  /* ===== photo frame ===== */
+  .photo-frame{
+    position:relative;background:#fff;padding:7px 7px 20px;
+    box-shadow:0 6px 14px var(--shadow-strong);flex-shrink:0;
+    width:78px;height:88px;cursor:pointer;border:none;
+  }
+  .photo-frame img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-frame::before{
+    content:"";position:absolute;top:-9px;left:50%;width:46px;height:18px;
+    background:rgba(240,170,46,0.55);transform:translateX(-50%) rotate(-4deg);
+    box-shadow:0 2px 3px rgba(0,0,0,0.1);
+  }
+  .photo-placeholder{
+    width:78px;height:88px;border-radius:8px;border:2px dashed var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:20px;
+    color:var(--ink-faint);flex-shrink:0;background:#FAFBF9;
+  }
+
+  /* ===== modal ===== */
+  .overlay{
+    position:fixed;inset:0;background:rgba(20,30,29,0.55);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:5vh 16px;overflow-y:auto;z-index:50;
+    animation:fadeIn .18s ease;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--paper);border-radius:var(--radius);max-width:480px;width:100%;
+    padding:24px;box-shadow:0 20px 50px rgba(0,0,0,0.3);
+    animation:popIn .22s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .modal-photo{max-width:90vw;max-height:90vh;border-radius:12px;background:#fff;padding:10px;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes popIn{from{opacity:0;transform:translateY(14px) scale(.97);}to{opacity:1;transform:none;}}
+
+  .modal h3{margin:0 0 16px;font-size:19px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;font-weight:800;color:var(--ink-soft);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;}
+  .field input[type=text], .field input[type=date], .field input[type=time], .field input[type=number], .field select, .field textarea{
+    width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:#FAFBF9;color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--teal);background:#fff;}
+  .field textarea{resize:vertical;min-height:60px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .file-drop{
+    border:2px dashed var(--line);border-radius:10px;padding:14px;text-align:center;
+    font-size:13px;color:var(--ink-soft);font-weight:700;background:#FAFBF9;
+  }
+  .file-drop input{margin-top:8px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+
+  .avatar-picker{display:flex;gap:8px;flex-wrap:wrap;}
+  .avatar-swatch{
+    width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer;
+  }
+  .avatar-swatch.selected{border-color:var(--ink);}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;
+    font-weight:700;font-size:13.5px;box-shadow:0 10px 24px rgba(0,0,0,0.25);
+    z-index:60;display:flex;align-items:center;gap:8px;
+    animation:toastIn .25s ease;
+  }
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,10px);}to{opacity:1;transform:translate(-50%,0);}}
+
+  .confetti-piece{
+    position:fixed;top:-10px;width:8px;height:8px;border-radius:2px;z-index:70;
+    animation:confettiFall 1.1s ease-in forwards;
+  }
+  @keyframes confettiFall{
+    to{transform:translateY(100vh) rotate(360deg);opacity:0.2;}
+  }
+
+  footer.appfoot{text-align:center;margin-top:34px;color:var(--ink-faint);font-size:12px;font-weight:600;line-height:1.6;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;}
+  }
+
+  @media (max-width:600px){
+    .field-row{grid-template-columns:1fr;}
+    .brand h1{font-size:19px;}
+    .content-card{padding:16px;}
+    .item-card{flex-wrap:wrap;}
+    .item-actions{flex-direction:row;width:100%;justify-content:flex-end;}
+  }
+
+  /* ===== login ===== */
+  #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-card{
+    background:var(--paper);border-radius:var(--radius);box-shadow:0 10px 30px var(--shadow-strong);
+    padding:32px 28px;max-width:380px;width:100%;text-align:center;
+  }
+  .login-card .brand-badge{margin:0 auto 14px;}
+  .login-card h1{font-size:22px;margin:0 0 4px;}
+  .login-card p.sub{color:var(--ink-soft);font-size:13.5px;font-weight:600;margin:0 0 20px;}
+  .login-error{color:var(--coral-dark);font-size:13px;font-weight:700;margin-top:8px;min-height:18px;}
+  .logout-row{display:flex;justify-content:flex-end;margin-bottom:8px;}
+  .logout-btn{background:none;border:none;color:var(--ink-soft);font-weight:800;font-size:12.5px;text-decoration:underline;padding:6px;cursor:pointer;}
+  .sync-badge{
+    display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;
+    color:var(--teal-dark);background:var(--teal-tint);padding:4px 10px;border-radius:999px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Firebase SDK (compat, para funcionar com tags de script simples) -->
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8xHNnD5EIu6PnMlEzYaLCsxUQtFhTnak",
+    authDomain: "doctorcalendar-9b5fb.firebaseapp.com",
+    projectId: "doctorcalendar-9b5fb",
+    storageBucket: "doctorcalendar-9b5fb.firebasestorage.app",
+    messagingSenderId: "713733542544",
+    appId: "1:713733542544:web:ee548da3d246f34105be15"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+    console.warn('Cache offline do Firestore não disponível:', err.code);
+  });
+</script>
+
+<div id="loginScreen" style="display:none;">
+  <div class="login-card">
+    <div class="brand-badge">🗂️</div>
+    <h1 class="display">Meu Painel de Saúde</h1>
+    <p class="sub">Entre com o e-mail e a senha da família para acessar</p>
+    <form onsubmit="return fazerLogin(event)">
+      <div class="field" style="text-align:left;">
+        <label>E-mail</label>
+        <input type="text" id="fLoginEmail" autocomplete="username" required>
+      </div>
+      <div class="field" style="text-align:left;">
+        <label>Senha</label>
+        <input type="password" id="fLoginSenha" autocomplete="current-password" required>
+      </div>
+      <p class="login-error" id="loginErro"></p>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:6px;" id="btnLogin">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<div id="app" style="display:none;"></div>
+<div class="overlay" id="overlay"><div class="modal" id="modalBox"></div></div>
+<div id="toastHost"></div>
+
+<script>
+/* ============ estado (agora sincronizado pelo Firestore) ============ */
+const ESPECIALIDADES = [
+  'Alergista','Anestesiologista','Angiologista','Cardiologista','Cirurgião Geral',
+  'Clínico Geral','Dentista','Dermatologista','Endocrinologista','Fisioterapeuta',
+  'Fonoaudiólogo','Gastroenterologista','Geriatra','Ginecologista','Hematologista',
+  'Hepatologista','Infectologista','Mastologista','Nefrologista','Neurologista',
+  'Nutricionista','Obstetra','Oftalmologista','Oncologista','Ortopedista',
+  'Otorrinolaringologista','Pediatra','Pneumologista','Psicólogo','Psiquiatra',
+  'Reumatologista','Urologista','Outra'
+];
+
+const CORES = [
+  {nome:'coral', bg:'var(--coral)', tint:'var(--coral-tint)', dark:'var(--coral-dark)'},
+  {nome:'teal', bg:'var(--teal)', tint:'var(--teal-tint)', dark:'var(--teal-dark)'},
+  {nome:'gold', bg:'var(--gold)', tint:'var(--gold-tint)', dark:'var(--gold-dark)'},
+  {nome:'plum', bg:'var(--plum)', tint:'var(--plum-tint)', dark:'var(--plum-dark)'},
+  {nome:'sky', bg:'var(--sky)', tint:'var(--sky-tint)', dark:'var(--sky-dark)'},
+];
+
+/* dados principais — preenchidos e mantidos atualizados pelos listeners do Firestore */
+let state = { people:[], consultas:[], lembretes:[], receitas:[], requisicoes:[], usuarios:[] };
+
+/* estado de interface (qual pessoa/aba está ativa) — fica só neste aparelho, não sincroniza */
+const UI_KEY = 'painelSaudeUi_v1';
+function loadUiLocal(){
+  try{
+    const raw = localStorage.getItem(UI_KEY);
+    return raw ? JSON.parse(raw) : { activePersonId:null, activeSection:'consultas' };
+  }catch(e){ return { activePersonId:null, activeSection:'consultas' }; }
+}
+function saveUiLocal(){
+  try{
+    localStorage.setItem(UI_KEY, JSON.stringify({ activePersonId: state.activePersonId, activeSection: state.activeSection }));
+  }catch(e){ /* não é crítico */ }
+}
+Object.assign(state, loadUiLocal());
+
+/* estado transitório de busca — não é salvo em lugar nenhum */
+const uiState = { search: { consultas:'', lembretes:'', receitas:'', requisicoes:'' } };
+
+function normalizar(str){
+  return (str||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function correspondeBusca(query, ...campos){
+  if(!query) return true;
+  const alvo = normalizar(query);
+  return campos.some(c=>normalizar(c).includes(alvo));
+}
+function atualizarBusca(secao, valor){
+  uiState.search[secao] = valor;
+  const wrapper = document.getElementById('sectionContent');
+  if(!wrapper) return;
+  wrapper.innerHTML = renderSecaoAtual(pessoaAtiva());
+  const input = document.getElementById('searchInput_'+secao);
+  if(input){ input.focus(); const p = input.value.length; input.setSelectionRange(p,p); }
+}
+function limparBusca(secao){
+  uiState.search[secao] = '';
+  atualizarBusca(secao, '');
+}
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function semId(obj){ const {id, ...resto} = obj; return resto; }
+
+/* ============ gravação/leitura no Firestore ============ */
+async function fsSet(colecao, id, dados){
+  try{
+    await db.collection(colecao).doc(id).set(dados);
+  }catch(e){
+    console.error(e);
+    showToast('⚠️ Não foi possível salvar. Verifique sua internet.');
+  }
+}
+async function fsDelete(colecao, id){
+  try{
+    await db.collection(colecao).doc(id).delete();
+  }catch(e){
+    console.error(e);
+    showToast('⚠️ Não foi possível excluir. Verifique sua internet.');
+  }
+}
+
+function meuUid(){ return auth.currentUser ? auth.currentUser.uid : null; }
+function nomeDoDono(uid){
+  const u = (state.usuarios||[]).find(u=>u.uid===uid);
+  return u ? (u.nome || u.email) : 'outro membro da família';
+}
+
+let unsubscribers = [];
+const COLECOES_COMPARTILHAVEIS = [
+  ['pessoas','people'], ['consultas','consultas'], ['lembretes','lembretes'],
+  ['receitas','receitas'], ['requisicoes','requisicoes']
+];
+
+/* cada coleção compartilhável precisa de DOIS listeners (o que é meu + o que compartilharam
+   comigo), porque o Firestore não filtra listas parcialmente contra as regras de segurança —
+   por isso duas consultas com "where" em vez de uma única sem filtro. */
+function criarListenerDuplo(colecao, chave){
+  const uidAtual = meuUid();
+  let doOwner = [], doCompartilhado = [];
+  function mesclar(){
+    const mapa = new Map();
+    doOwner.forEach(d=>mapa.set(d.id, d));
+    doCompartilhado.forEach(d=>mapa.set(d.id, d));
+    state[chave] = Array.from(mapa.values());
+    if(chave==='people' && !state.activePersonId && state.people.length){
+      state.activePersonId = state.people[0].id;
+      saveUiLocal();
+    }
+    render();
+  }
+  const u1 = db.collection(colecao).where('donoUid','==',uidAtual).onSnapshot(snap=>{
+    doOwner = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    mesclar();
+  }, err=>{ console.error(err); showToast('⚠️ Falha ao sincronizar dados.'); });
+  const u2 = db.collection(colecao).where('compartilhadoCom','array-contains',uidAtual).onSnapshot(snap=>{
+    doCompartilhado = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    mesclar();
+  }, err=>{ console.error(err); });
+  unsubscribers.push(u1, u2);
+}
+
+function sincronizarUsuarios(){
+  const unsub = db.collection('usuarios').onSnapshot(snap=>{
+    state.usuarios = snap.docs.map(d=>({ uid:d.id, ...d.data() }));
+    render();
+  }, err=>console.error(err));
+  unsubscribers.push(unsub);
+}
+
+function iniciarSincronizacao(){
+  COLECOES_COMPARTILHAVEIS.forEach(([colecao, chave])=>criarListenerDuplo(colecao, chave));
+  sincronizarUsuarios();
+  verificarDadosAntigos();
+}
+
+function pararSincronizacao(){
+  unsubscribers.forEach(u=>u());
+  unsubscribers = [];
+  dadosAntigosPendentes = 0;
+  state = Object.assign({ people:[], consultas:[], lembretes:[], receitas:[], requisicoes:[], usuarios:[] }, loadUiLocal());
+}
+
+/* ============ migração de dados de antes do compartilhamento ============ */
+let dadosAntigosPendentes = 0;
+function verificarDadosAntigos(){
+  const colecoes = COLECOES_COMPARTILHAVEIS.map(c=>c[0]);
+  Promise.all(colecoes.map(c=>
+    db.collection(c).get().then(snap=>snap.docs.filter(d=>!('donoUid' in d.data())).length)
+  )).then(contagens=>{
+    dadosAntigosPendentes = contagens.reduce((a,b)=>a+b, 0);
+    render();
+  }).catch(err=>console.error(err));
+}
+
+function migrarDadosAntigos(){
+  if(!confirm('Isso vai atribuir a você todos os dados antigos que ainda não têm um responsável definido. Continuar?')) return;
+  const uidAtual = meuUid();
+  const colecoes = COLECOES_COMPARTILHAVEIS.map(c=>c[0]);
+  Promise.all(colecoes.map(c=>
+    db.collection(c).get().then(snap=>{
+      const alvos = snap.docs.filter(d=>!('donoUid' in d.data()));
+      if(!alvos.length) return null;
+      const batch = db.batch();
+      alvos.forEach(d=>batch.update(d.ref, { donoUid: uidAtual, compartilhadoCom: [] }));
+      return batch.commit();
+    })
+  )).then(()=>{
+    dadosAntigosPendentes = 0;
+    showToast('✅ Dados antigos migrados para você');
+    render();
+  }).catch(err=>{
+    console.error(err);
+    showToast('⚠️ Falha ao migrar. Tente novamente.');
+  });
+}
+
+/* ============ nome de exibição da família ============ */
+function garantirUsuario(user){
+  const ref = db.collection('usuarios').doc(user.uid);
+  ref.get().then(snap=>{
+    if(!snap.exists){
+      ref.set({ email:user.email, nome:'' });
+      abrirModalNome(user.uid);
+    }else if(!snap.data().nome){
+      abrirModalNome(user.uid);
+    }else if(snap.data().email !== user.email){
+      ref.set({ email:user.email }, {merge:true});
+    }
+  }).catch(err=>console.error(err));
+}
+function abrirModalNome(uidAlvo){
+  openModal(`
+    <h3>👋 Como você quer aparecer?</h3>
+    <p style="font-size:13px;color:var(--ink-soft);margin-top:-8px;">Esse nome aparece para a família na hora de escolher com quem compartilhar um perfil.</p>
+    <form onsubmit="return salvarNomeUsuario(event, '${uidAlvo}')">
+      <div class="field">
+        <label>Seu nome</label>
+        <input type="text" id="fMeuNome" required>
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  `);
+  setTimeout(()=>{ const el = document.getElementById('fMeuNome'); if(el) el.focus(); }, 30);
+}
+function salvarNomeUsuario(e, uidAlvo){
+  e.preventDefault();
+  const nome = document.getElementById('fMeuNome').value.trim();
+  if(!nome) return false;
+  db.collection('usuarios').doc(uidAlvo).set({ nome }, {merge:true});
+  closeModal();
+  return false;
+}
+
+/* ============ autenticação ============ */
+function fazerLogin(e){
+  e.preventDefault();
+  const email = document.getElementById('fLoginEmail').value.trim();
+  const senha = document.getElementById('fLoginSenha').value;
+  const btn = document.getElementById('btnLogin');
+  const erro = document.getElementById('loginErro');
+  erro.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  auth.signInWithEmailAndPassword(email, senha)
+    .catch(err=>{
+      erro.textContent = 'E-mail ou senha incorretos.';
+    })
+    .finally(()=>{
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+    });
+  return false;
+}
+
+function fazerLogout(){
+  if(!confirm('Sair do app?')) return;
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    garantirUsuario(user);
+    iniciarSincronizacao();
+  }else{
+    pararSincronizacao();
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+});
+
+/* ============ helpers ============ */
+function corDe(colorIndex){ return CORES[colorIndex % CORES.length]; }
+
+function pessoaAtiva(){ return state.people.find(p=>p.id===state.activePersonId) || null; }
+
+function formatDateBR(iso){
+  if(!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function hojeISO(){ return new Date().toISOString().slice(0,10); }
+
+function especialidadeLabel(item){
+  return item.especialidade === 'Outra' ? (item.especialidadeCustom || 'Outra') : item.especialidade;
+}
+
+function escapeHtml(str){
+  if(str===undefined||str===null) return '';
+  return String(str).replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
+function optionsEspecialidades(selected){
+  return ESPECIALIDADES.map(e=>`<option value="${e}" ${e===selected?'selected':''}>${e}</option>`).join('');
+}
+
+function consultasRealizadasDe(personId){
+  return state.consultas
+    .filter(c=>c.personId===personId && c.status==='realizada')
+    .sort((a,b)=>b.data.localeCompare(a.data));
+}
+
+function optionsConsultasVinculo(personId, selectedId){
+  const lista = consultasRealizadasDe(personId);
+  let html = `<option value="">Nenhuma</option>`;
+  lista.forEach(c=>{
+    const label = `${especialidadeLabel(c)}${c.medico ? ' · '+c.medico : ''} · ${formatDateBR(c.data)}`;
+    html += `<option value="${c.id}" ${c.id===selectedId?'selected':''}>${escapeHtml(label)}</option>`;
+  });
+  return html;
+}
+
+function descricaoConsultaVinculada(consultaId){
+  const c = state.consultas.find(c=>c.id===consultaId);
+  if(!c) return null;
+  return `${especialidadeLabel(c)}${c.medico?' · '+c.medico:''} · ${formatDateBR(c.data)}`;
+}
+
+function contarVinculados(consultaId){
+  const rec = state.receitas.filter(r=>r.consultaId===consultaId).length;
+  const req = state.requisicoes.filter(r=>r.consultaId===consultaId).length;
+  return rec+req;
+}
+
+/* ============ toast & confetti ============ */
+function showToast(msg){
+  const host = document.getElementById('toastHost');
+  const t = document.createElement('div');
+  t.className='toast';
+  t.textContent = msg;
+  host.appendChild(t);
+  setTimeout(()=>t.remove(), 2400);
+}
+
+function celebrar(){
+  const cores = ['#FF6B5B','#F0AA2E','#2A6F6B','#8E7BC0','#3F98BE'];
+  for(let i=0;i<22;i++){
+    const p = document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left = Math.random()*100+'vw';
+    p.style.background = cores[i%cores.length];
+    p.style.animationDelay = (Math.random()*0.2)+'s';
+    p.style.transform = `rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 1400);
+  }
+}
+
+/* ============ modal genérico ============ */
+function openModal(html){
+  document.getElementById('modalBox').innerHTML = html;
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('modalBox').innerHTML = '';
+}
+document.getElementById('overlay').addEventListener('click', (e)=>{
+  if(e.target.id==='overlay') closeModal();
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Escape') closeModal();
+});
+
+/* ============ upload / redimensionamento de imagem ============ */
+function fileParaImagemComprimida(file, cb){
+  if(!file) return cb(null);
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxDim = 900;
+      let w = img.width, h = img.height;
+      if(w>maxDim || h>maxDim){
+        if(w>h){ h = Math.round(h*(maxDim/w)); w = maxDim; }
+        else{ w = Math.round(w*(maxDim/h)); h = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL('image/jpeg',0.78));
+    };
+    img.onerror = ()=>cb(null);
+    img.src = e.target.result;
+  };
+  reader.onerror = ()=>cb(null);
+  reader.readAsDataURL(file);
+}
+
+function verFoto(dataUrl){
+  openModal(`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+      <button class="btn-icon" onclick="closeModal()">✕</button>
+    </div>
+    <div style="display:flex;justify-content:center;">
+      <img class="modal-photo" src="${dataUrl}" alt="Foto ampliada">
+    </div>
+  `);
+}
+
+/* ============ pessoas ============ */
+function abrirModalNovaPessoa(){
+  openModal(`
+    <h3>👋 Nova pessoa</h3>
+    <form onsubmit="return salvarPessoa(event)">
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" id="fNomePessoa" placeholder="Ex.: Ana, Pedro, Vovó Lia" required>
+      </div>
+      <div class="field">
+        <label>Cor do perfil</label>
+        <div class="avatar-picker" id="avatarPicker"></div>
+        <input type="hidden" id="fCorPessoa" value="0">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Adicionar pessoa</button>
+      </div>
+    </form>
+  `);
+  const picker = document.getElementById('avatarPicker');
+  picker.innerHTML = CORES.map((c,i)=>`<button type="button" class="avatar-swatch ${i===0?'selected':''}" style="background:${c.bg}" onclick="escolherCor(${i})"></button>`).join('');
+  document.getElementById('fNomePessoa').focus();
+}
+
+function escolherCor(i){
+  document.getElementById('fCorPessoa').value = i;
+  document.querySelectorAll('.avatar-swatch').forEach((el,idx)=>el.classList.toggle('selected', idx===i));
+}
+
+function salvarPessoa(e){
+  e.preventDefault();
+  const nome = document.getElementById('fNomePessoa').value.trim();
+  const cor = Number(document.getElementById('fCorPessoa').value);
+  if(!nome) return false;
+  const id = uid();
+  fsSet('pessoas', id, { nome, colorIndex:cor, donoUid: meuUid(), compartilhadoCom: [] });
+  state.activePersonId = id;
+  saveUiLocal();
+  closeModal();
+  showToast(`✅ ${nome} foi adicionado(a)`);
+  return false;
+}
+
+function selecionarPessoa(id){
+  state.activePersonId = id;
+  saveUiLocal();
+  render();
+}
+
+function abrirModalCompartilhar(pessoaId){
+  const pessoa = state.people.find(p=>p.id===pessoaId);
+  if(!pessoa) return;
+  const outros = (state.usuarios||[]).filter(u=>u.uid!==meuUid());
+  const atuais = pessoa.compartilhadoCom || [];
+  openModal(`
+    <h3>🔗 Compartilhar ${escapeHtml(pessoa.nome)}</h3>
+    <p style="font-size:13px;color:var(--ink-soft);margin-top:-8px;">Quem você marcar abaixo passa a ver e editar os dados de ${escapeHtml(pessoa.nome)} — e o perfil dessa pessoa aparece para ela como compartilhado por você.</p>
+    <div style="display:flex;flex-direction:column;gap:12px;margin:16px 0;">
+      ${outros.length ? outros.map(u=>`
+        <label style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;">
+          <input type="checkbox" class="chkCompartilhar" value="${u.uid}" ${atuais.includes(u.uid)?'checked':''} style="width:18px;height:18px;">
+          ${escapeHtml(u.nome || u.email)}
+        </label>
+      `).join('') : '<p style="font-size:13px;color:var(--ink-faint);">Nenhum outro login da família apareceu ainda — peça para a pessoa entrar no app pelo menos uma vez.</p>'}
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button type="button" class="btn btn-primary" onclick="salvarCompartilhamento('${pessoaId}')">Salvar</button>
+    </div>
+  `);
+}
+
+function salvarCompartilhamento(pessoaId){
+  const pessoa = state.people.find(p=>p.id===pessoaId);
+  if(!pessoa) return;
+  const marcados = Array.from(document.querySelectorAll('.chkCompartilhar:checked')).map(i=>i.value);
+  fsSet('pessoas', pessoaId, { ...semId(pessoa), compartilhadoCom: marcados });
+  ['consultas','lembretes','receitas','requisicoes'].forEach(colecao=>{
+    db.collection(colecao).where('personId','==',pessoaId).get().then(snap=>{
+      if(snap.empty) return null;
+      const batch = db.batch();
+      snap.docs.forEach(d=>batch.update(d.ref, { compartilhadoCom: marcados }));
+      return batch.commit();
+    }).catch(err=>console.error(err));
+  });
+  closeModal();
+  showToast('✅ Compartilhamento atualizado');
+}
+
+function excluirPessoa(id){
+  const pessoa = state.people.find(p=>p.id===id);
+  if(!pessoa) return;
+  if(!confirm(`Remover "${pessoa.nome}"? Todas as consultas, lembretes, receitas e requisições dessa pessoa serão apagados. Essa ação não pode ser desfeita.`)) return;
+  fsDelete('pessoas', id);
+  state.consultas.filter(c=>c.personId===id).forEach(c=>fsDelete('consultas', c.id));
+  state.lembretes.filter(l=>l.personId===id).forEach(l=>fsDelete('lembretes', l.id));
+  state.receitas.filter(r=>r.personId===id).forEach(r=>fsDelete('receitas', r.id));
+  state.requisicoes.filter(r=>r.personId===id).forEach(r=>fsDelete('requisicoes', r.id));
+  if(state.activePersonId===id){
+    state.activePersonId = null;
+    saveUiLocal();
+  }
+  showToast('Pessoa removida');
+}
+
+/* ============ consultas ============ */
+function abrirModalConsulta(idEdicao){
+  const editando = idEdicao ? state.consultas.find(c=>c.id===idEdicao) : null;
+  openModal(`
+    <h3>${editando ? '✏️ Editar consulta' : '📅 Nova consulta'}</h3>
+    <form onsubmit="return salvarConsulta(event, ${editando ? `'${editando.id}'` : 'null'})">
+      <div class="field">
+        <label>Especialidade</label>
+        <select id="fEspecialidade" onchange="toggleEspecialidadeCustom()">${optionsEspecialidades(editando?editando.especialidade:'Clínico Geral')}</select>
+      </div>
+      <div class="field" id="campoEspecialidadeCustom" style="display:${editando && editando.especialidade==='Outra' ? 'block':'none'}">
+        <label>Qual especialidade?</label>
+        <input type="text" id="fEspecialidadeCustom" value="${escapeHtml(editando?editando.especialidadeCustom:'')}" placeholder="Ex.: Nutrólogo">
+      </div>
+      <div class="field">
+        <label>Médico(a)</label>
+        <input type="text" id="fMedico" value="${escapeHtml(editando?editando.medico:'')}" placeholder="Nome do médico(a)">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="fData" value="${editando?editando.data:hojeISO()}" required>
+        </div>
+        <div class="field">
+          <label>Hora</label>
+          <input type="time" id="fHora" value="${editando?editando.hora||'':''}">
+        </div>
+      </div>
+      <div class="field">
+        <label>Local</label>
+        <input type="text" id="fLocal" value="${escapeHtml(editando?editando.local:'')}" placeholder="Clínica, hospital, endereço...">
+      </div>
+      <div class="field">
+        <label>Motivo / observações</label>
+        <textarea id="fMotivo" placeholder="Rotina, retorno, sintoma específico...">${escapeHtml(editando?editando.motivo:'')}</textarea>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="fStatus">
+          <option value="agendada" ${editando&&editando.status==='agendada'?'selected':''}>Agendada</option>
+          <option value="realizada" ${editando&&editando.status==='realizada'?'selected':''}>Realizada</option>
+          <option value="cancelada" ${editando&&editando.status==='cancelada'?'selected':''}>Cancelada</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        ${editando ? `<button type="button" class="btn-danger-text" onclick="excluirConsulta('${editando.id}')">Excluir</button>` : ''}
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">${editando?'Salvar':'Adicionar consulta'}</button>
+      </div>
+    </form>
+  `);
+}
+
+function toggleEspecialidadeCustom(){
+  const v = document.getElementById('fEspecialidade').value;
+  document.getElementById('campoEspecialidadeCustom').style.display = v==='Outra' ? 'block' : 'none';
+}
+
+function salvarConsulta(e, id){
+  e.preventDefault();
+  const pessoa = pessoaAtiva();
+  if(!pessoa) return false;
+  const dados = {
+    personId: pessoa.id,
+    donoUid: pessoa.donoUid,
+    compartilhadoCom: pessoa.compartilhadoCom || [],
+    especialidade: document.getElementById('fEspecialidade').value,
+    especialidadeCustom: document.getElementById('fEspecialidadeCustom') ? document.getElementById('fEspecialidadeCustom').value.trim() : '',
+    medico: document.getElementById('fMedico').value.trim(),
+    data: document.getElementById('fData').value,
+    hora: document.getElementById('fHora').value,
+    local: document.getElementById('fLocal').value.trim(),
+    motivo: document.getElementById('fMotivo').value.trim(),
+    status: document.getElementById('fStatus').value,
+  };
+  const docId = id || uid();
+  fsSet('consultas', docId, dados);
+  showToast(id ? '✅ Consulta atualizada' : '✅ Consulta adicionada');
+  closeModal();
+  return false;
+}
+
+function marcarRealizada(id){
+  const c = state.consultas.find(c=>c.id===id);
+  if(!c) return;
+  fsSet('consultas', id, { ...semId(c), status:'realizada' });
+  celebrar();
+  showToast('🎉 Consulta marcada como realizada');
+}
+
+function excluirConsulta(id){
+  if(!confirm('Excluir esta consulta?')) return;
+  fsDelete('consultas', id);
+  closeModal();
+  showToast('Consulta excluída');
+}
+
+/* ============ lembretes ============ */
+function getUltimaConsultaRealizada(personId, especialidade){
+  const lista = state.consultas.filter(c=>c.personId===personId && especialidadeLabel(c)===especialidade && c.status==='realizada' && c.data);
+  if(!lista.length) return null;
+  return lista.map(c=>c.data).sort().slice(-1)[0];
+}
+
+function calcularStatusLembrete(lembrete){
+  const ultima = getUltimaConsultaRealizada(lembrete.personId, lembrete.especialidade);
+  if(!ultima) return { status:'sem-registro', proxima:null, ultima:null, percentual:0 };
+  const dataUltima = new Date(ultima+'T00:00:00');
+  const proxima = new Date(dataUltima);
+  proxima.setMonth(proxima.getMonth() + Number(lembrete.frequenciaMeses||12));
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const totalDias = (proxima - dataUltima) / 86400000;
+  const decorridos = (hoje - dataUltima) / 86400000;
+  const percentual = Math.min(100, Math.max(0, Math.round((decorridos/totalDias)*100)));
+  const diffDias = Math.round((proxima - hoje) / 86400000);
+  let status;
+  if(diffDias < 0) status='atrasado';
+  else if(diffDias <= 30) status='proximo';
+  else status='em-dia';
+  return { status, proxima: proxima.toISOString().slice(0,10), ultima, percentual };
+}
+
+function abrirModalLembrete(idEdicao){
+  const editando = idEdicao ? state.lembretes.find(l=>l.id===idEdicao) : null;
+  openModal(`
+    <h3>${editando ? '✏️ Editar lembrete' : '🔔 Novo lembrete'}</h3>
+    <form onsubmit="return salvarLembrete(event, ${editando?`'${editando.id}'`:'null'})">
+      <div class="field">
+        <label>Especialidade</label>
+        <select id="fLembreteEspecialidade" ${editando?'disabled':''}>${optionsEspecialidades(editando?editando.especialidade:'Clínico Geral').replace('<option value="Outra">Outra</option>','')}</select>
+      </div>
+      <div class="field">
+        <label>Repetir a cada quantos meses?</label>
+        <input type="number" id="fFrequencia" min="1" max="60" value="${editando?editando.frequenciaMeses:12}" required>
+      </div>
+      <div class="modal-actions">
+        ${editando ? `<button type="button" class="btn-danger-text" onclick="excluirLembrete('${editando.id}')">Excluir</button>` : ''}
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">${editando?'Salvar':'Adicionar lembrete'}</button>
+      </div>
+    </form>
+  `);
+}
+
+function salvarLembrete(e, id){
+  e.preventDefault();
+  const pessoa = pessoaAtiva();
+  if(!pessoa) return false;
+  const especialidade = document.getElementById('fLembreteEspecialidade').value;
+  const frequenciaMeses = Number(document.getElementById('fFrequencia').value);
+  const dados = { personId:pessoa.id, especialidade, frequenciaMeses, donoUid:pessoa.donoUid, compartilhadoCom:pessoa.compartilhadoCom||[] };
+  if(id){
+    fsSet('lembretes', id, dados);
+  }else{
+    const jaExiste = state.lembretes.some(l=>l.personId===pessoa.id && l.especialidade===especialidade);
+    if(jaExiste){ showToast('Já existe um lembrete para essa especialidade'); return false; }
+    fsSet('lembretes', uid(), dados);
+  }
+  closeModal();
+  showToast('✅ Lembrete salvo');
+  return false;
+}
+
+function excluirLembrete(id){
+  if(!confirm('Remover este lembrete?')) return;
+  fsDelete('lembretes', id);
+  closeModal();
+  showToast('Lembrete removido');
+}
+
+function agendarApartirDoLembrete(especialidade){
+  state.activeSection = 'consultas';
+  saveUiLocal();
+  render();
+  abrirModalConsulta(null);
+  setTimeout(()=>{
+    const sel = document.getElementById('fEspecialidade');
+    if(sel){ sel.value = especialidade; toggleEspecialidadeCustom(); }
+  }, 30);
+}
+
+/* ============ receitas ============ */
+function abrirModalReceita(idEdicao){
+  const editando = idEdicao ? state.receitas.find(r=>r.id===idEdicao) : null;
+  openModal(`
+    <h3>${editando?'✏️ Editar receita':'💊 Nova receita'}</h3>
+    <form onsubmit="return salvarReceita(event, ${editando?`'${editando.id}'`:'null'})">
+      <div class="field">
+        <label>Médico(a)</label>
+        <input type="text" id="fMedicoReceita" value="${escapeHtml(editando?editando.medico:'')}" placeholder="Quem receitou">
+      </div>
+      <div class="field">
+        <label>Vincular a uma consulta (opcional)</label>
+        <select id="fConsultaVinculoReceita">${optionsConsultasVinculo(pessoaAtiva().id, editando?editando.consultaId:'')}</select>
+      </div>
+      <div class="field">
+        <label>Medicamento(s)</label>
+        <textarea id="fMedicamentos" placeholder="Um por linha, com dosagem se quiser">${escapeHtml(editando?editando.medicamentos:'')}</textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Data da receita</label>
+          <input type="date" id="fDataReceita" value="${editando?editando.data:hojeISO()}">
+        </div>
+        <div class="field">
+          <label>Válida até</label>
+          <input type="date" id="fValidadeReceita" value="${editando?editando.validade||'':''}">
+        </div>
+      </div>
+      <div class="field">
+        <label>Foto da receita</label>
+        <div class="file-drop">
+          📷 Tire uma foto ou escolha da galeria
+          <br><input type="file" id="fFotoReceita" accept="image/*" capture="environment">
+        </div>
+        ${editando && editando.foto ? `<div style="margin-top:10px;"><button type="button" class="photo-frame" onclick="verFoto('${editando.foto}')"><img src="${editando.foto}"></button></div>` : ''}
+      </div>
+      <div class="field">
+        <label>Observações</label>
+        <input type="text" id="fNotasReceita" value="${escapeHtml(editando?editando.notas:'')}" placeholder="Opcional">
+      </div>
+      <div class="modal-actions">
+        ${editando ? `<button type="button" class="btn-danger-text" onclick="excluirReceita('${editando.id}')">Excluir</button>` : ''}
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">${editando?'Salvar':'Adicionar receita'}</button>
+      </div>
+    </form>
+  `);
+}
+
+function salvarReceita(e, id){
+  e.preventDefault();
+  e.stopPropagation();
+  const pessoa = pessoaAtiva();
+  if(!pessoa) return false;
+  const fileInput = document.getElementById('fFotoReceita');
+  const dadosBase = {
+    personId: pessoa.id,
+    donoUid: pessoa.donoUid,
+    compartilhadoCom: pessoa.compartilhadoCom || [],
+    medico: document.getElementById('fMedicoReceita').value.trim(),
+    medicamentos: document.getElementById('fMedicamentos').value.trim(),
+    data: document.getElementById('fDataReceita').value,
+    validade: document.getElementById('fValidadeReceita').value,
+    notas: document.getElementById('fNotasReceita').value.trim(),
+    consultaId: document.getElementById('fConsultaVinculoReceita').value || null,
+  };
+  const file = fileInput.files[0];
+  fileParaImagemComprimida(file, (dataUrl)=>{
+    const docId = id || uid();
+    let fotoFinal = dataUrl;
+    if(!dataUrl && id){
+      const existente = state.receitas.find(r=>r.id===id);
+      fotoFinal = existente ? existente.foto : null;
+    }
+    fsSet('receitas', docId, { ...dadosBase, foto: fotoFinal || null });
+    showToast(id ? '✅ Receita atualizada' : '✅ Receita adicionada');
+    closeModal();
+  });
+  return false;
+}
+
+function excluirReceita(id){
+  if(!confirm('Excluir esta receita?')) return;
+  fsDelete('receitas', id);
+  closeModal();
+  showToast('Receita excluída');
+}
+
+/* ============ requisições ============ */
+function abrirModalRequisicao(idEdicao){
+  const editando = idEdicao ? state.requisicoes.find(r=>r.id===idEdicao) : null;
+  openModal(`
+    <h3>${editando?'✏️ Editar requisição':'🧾 Nova requisição'}</h3>
+    <form onsubmit="return salvarRequisicao(event, ${editando?`'${editando.id}'`:'null'})">
+      <div class="field">
+        <label>Tipo de exame</label>
+        <input type="text" id="fTipoExame" value="${escapeHtml(editando?editando.tipoExame:'')}" placeholder="Ex.: Hemograma, Raio-X, Ultrassom">
+      </div>
+      <div class="field">
+        <label>Médico(a) solicitante</label>
+        <input type="text" id="fMedicoRequisicao" value="${escapeHtml(editando?editando.medico:'')}">
+      </div>
+      <div class="field">
+        <label>Vincular a uma consulta (opcional)</label>
+        <select id="fConsultaVinculoRequisicao">${optionsConsultasVinculo(pessoaAtiva().id, editando?editando.consultaId:'')}</select>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Data da solicitação</label>
+          <input type="date" id="fDataRequisicao" value="${editando?editando.data:hojeISO()}">
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="fStatusRequisicao">
+            <option value="pendente" ${editando&&editando.status==='pendente'?'selected':''}>Pendente</option>
+            <option value="realizado" ${editando&&editando.status==='realizado'?'selected':''}>Realizado</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Foto da requisição</label>
+        <div class="file-drop">
+          📷 Tire uma foto ou escolha da galeria
+          <br><input type="file" id="fFotoRequisicao" accept="image/*" capture="environment">
+        </div>
+        ${editando && editando.foto ? `<div style="margin-top:10px;"><button type="button" class="photo-frame" onclick="verFoto('${editando.foto}')"><img src="${editando.foto}"></button></div>` : ''}
+      </div>
+      <div class="field">
+        <label>Observações</label>
+        <input type="text" id="fNotasRequisicao" value="${escapeHtml(editando?editando.notas:'')}" placeholder="Opcional">
+      </div>
+      <div class="modal-actions">
+        ${editando ? `<button type="button" class="btn-danger-text" onclick="excluirRequisicao('${editando.id}')">Excluir</button>` : ''}
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">${editando?'Salvar':'Adicionar requisição'}</button>
+      </div>
+    </form>
+  `);
+}
+
+function salvarRequisicao(e, id){
+  e.preventDefault();
+  const pessoa = pessoaAtiva();
+  if(!pessoa) return false;
+  const fileInput = document.getElementById('fFotoRequisicao');
+  const dadosBase = {
+    personId: pessoa.id,
+    donoUid: pessoa.donoUid,
+    compartilhadoCom: pessoa.compartilhadoCom || [],
+    tipoExame: document.getElementById('fTipoExame').value.trim(),
+    medico: document.getElementById('fMedicoRequisicao').value.trim(),
+    data: document.getElementById('fDataRequisicao').value,
+    status: document.getElementById('fStatusRequisicao').value,
+    notas: document.getElementById('fNotasRequisicao').value.trim(),
+    consultaId: document.getElementById('fConsultaVinculoRequisicao').value || null,
+  };
+  const file = fileInput.files[0];
+  fileParaImagemComprimida(file, (dataUrl)=>{
+    const docId = id || uid();
+    let fotoFinal = dataUrl;
+    if(!dataUrl && id){
+      const existente = state.requisicoes.find(r=>r.id===id);
+      fotoFinal = existente ? existente.foto : null;
+    }
+    fsSet('requisicoes', docId, { ...dadosBase, foto: fotoFinal || null });
+    showToast(id ? '✅ Requisição atualizada' : '✅ Requisição adicionada');
+    closeModal();
+  });
+  return false;
+}
+
+function alternarStatusRequisicao(id){
+  const r = state.requisicoes.find(r=>r.id===id);
+  if(!r) return;
+  const novoStatus = r.status==='pendente' ? 'realizado' : 'pendente';
+  fsSet('requisicoes', id, { ...semId(r), status:novoStatus });
+  if(novoStatus==='realizado'){ celebrar(); showToast('🎉 Exame marcado como realizado'); }
+}
+
+function excluirRequisicao(id){
+  if(!confirm('Excluir esta requisição?')) return;
+  fsDelete('requisicoes', id);
+  closeModal();
+  showToast('Requisição excluída');
+}
+
+/* ============ navegação de seção ============ */
+function irParaSecao(sec){
+  state.activeSection = sec;
+  saveUiLocal();
+  render();
+}
+
+/* ============ render principal ============ */
+function render(){
+  const app = document.getElementById('app');
+  if(!pessoaAtiva() && state.people.length){
+    state.activePersonId = state.people[0].id;
+    saveUiLocal();
+  }
+  const pessoa = pessoaAtiva();
+
+  let html = `
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">🗂️</div>
+        <div>
+          <h1 class="display">Meu Painel de Saúde</h1>
+          <span>Consultas, lembretes e documentos, organizados por pessoa</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="sync-badge">☁️ Sincronizado</span>
+        <button class="logout-btn" onclick="fazerLogout()">Sair</button>
+      </div>
+    </div>
+  `;
+
+  if(dadosAntigosPendentes>0){
+    html += `
+      <div class="content-card" style="border:2px solid var(--gold);margin-bottom:16px;">
+        <p style="margin:0 0 10px;font-weight:800;">⚠️ Encontramos ${dadosAntigosPendentes} registro(s) de antes da atualização de compartilhamento, ainda sem responsável definido.</p>
+        <button class="btn btn-primary btn-sm" onclick="migrarDadosAntigos()">Assumir esses dados como meus</button>
+      </div>
+    `;
+  }
+
+  if(state.people.length===0){
+    html += `
+      <div class="content-card">
+        <div class="empty-state">
+          <span class="emoji">🩺</span>
+          <h3>Vamos começar!</h3>
+          <p>Cadastre a primeira pessoa para organizar consultas, lembretes, receitas e requisições.</p>
+          <button class="btn btn-primary" onclick="abrirModalNovaPessoa()">+ Adicionar pessoa</button>
+        </div>
+      </div>
+      <footer class="appfoot">Seus dados ficam sincronizados na nuvem e aparecem em qualquer computador com o mesmo login.</footer>
+    `;
+    app.innerHTML = html;
+    return;
+  }
+
+  html += `<div class="people-row">`;
+  state.people.forEach(p=>{
+    const c = corDe(p.colorIndex);
+    const ativo = p.id===state.activePersonId;
+    const compartilhadaComigo = p.donoUid && p.donoUid!==meuUid();
+    html += `
+      <button class="person-tab ${ativo?'active':''}" onclick="selecionarPessoa('${p.id}')" title="${escapeHtml(p.nome)}">
+        <span class="dot" style="background:${c.bg}"></span>${escapeHtml(p.nome)}${compartilhadaComigo?' 🔗':''}
+      </button>
+    `;
+  });
+  html += `<button class="person-tab person-tab-add" onclick="abrirModalNovaPessoa()">+ pessoa</button>`;
+  html += `</div>`;
+
+  html += `<div class="content-card">`;
+
+  if(pessoa){
+    const souDono = !pessoa.donoUid || pessoa.donoUid===meuUid();
+    html += `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+        <div>${!souDono ? `<span class="sync-badge" style="background:var(--plum-tint);color:var(--plum-dark);">🔗 Compartilhado por ${escapeHtml(nomeDoDono(pessoa.donoUid))}</span>` : ''}</div>
+        <div style="display:flex;gap:14px;align-items:center;">
+          ${souDono ? `<button class="logout-btn" onclick="abrirModalCompartilhar('${pessoa.id}')">🔗 Compartilhar</button>` : ''}
+          ${souDono ? `<button class="btn-danger-text" onclick="excluirPessoa('${pessoa.id}')">Remover ${escapeHtml(pessoa.nome)}</button>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  const secoes = [
+    {id:'consultas', label:'Consultas', icon:'📅'},
+    {id:'lembretes', label:'Lembretes', icon:'🔔'},
+    {id:'receitas', label:'Receitas', icon:'💊'},
+    {id:'requisicoes', label:'Requisições', icon:'🧾'},
+  ];
+  html += `<div class="section-tabs">`;
+  secoes.forEach(s=>{
+    html += `<button class="section-tab ${state.activeSection===s.id?'active':''}" onclick="irParaSecao('${s.id}')">${s.icon} ${s.label}</button>`;
+  });
+  html += `</div>`;
+
+  html += `<div id="sectionContent">${renderSecaoAtual(pessoa)}</div>`;
+  html += `</div>`;
+
+  html += `<footer class="appfoot">Seus dados ficam sincronizados na nuvem e aparecem em qualquer computador com o mesmo login.</footer>`;
+
+  app.innerHTML = html;
+}
+
+function renderSecaoAtual(pessoa){
+  if(!pessoa) return '';
+  switch(state.activeSection){
+    case 'consultas': return renderConsultas(pessoa);
+    case 'lembretes': return renderLembretes(pessoa);
+    case 'receitas': return renderReceitas(pessoa);
+    case 'requisicoes': return renderRequisicoes(pessoa);
+    default: return '';
+  }
+}
+
+/* ---- consultas ---- */
+function renderConsultas(pessoa){
+  const todas = state.consultas
+    .filter(c=>c.personId===pessoa.id)
+    .sort((a,b)=> (a.status==='agendada'?0:1) - (b.status==='agendada'?0:1) || a.data.localeCompare(b.data));
+
+  const q = uiState.search.consultas;
+  const lista = todas.filter(c=>correspondeBusca(q, especialidadeLabel(c), c.medico, c.local, c.motivo));
+
+  let html = `
+    <div class="section-header">
+      <div><h2>Consultas de ${escapeHtml(pessoa.nome)}</h2><p>Agende, acompanhe e marque como realizada</p></div>
+      <button class="btn btn-primary" onclick="abrirModalConsulta(null)">+ Nova consulta</button>
+    </div>
+  `;
+
+  if(todas.length===0){
+    html += `<div class="empty-state"><span class="emoji">📅</span><h3>Nenhuma consulta ainda</h3><p>Que tal adicionar a primeira consulta de ${escapeHtml(pessoa.nome)}?</p><button class="btn btn-teal" onclick="abrirModalConsulta(null)">+ Adicionar consulta</button></div>`;
+    return html;
+  }
+
+  html += `
+    <div class="search-row">
+      <span class="search-icon">🔎</span>
+      <input class="search-input" id="searchInput_consultas" type="text" placeholder="Buscar por especialidade, médico ou local..." value="${escapeHtml(q)}" oninput="atualizarBusca('consultas', this.value)">
+    </div>
+  `;
+
+  if(lista.length===0){
+    html += `<div class="empty-state"><span class="emoji">🔎</span><h3>Nenhum resultado</h3><p>Não encontramos consultas para "${escapeHtml(q)}".</p><button class="btn btn-ghost" onclick="limparBusca('consultas')">Limpar busca</button></div>`;
+    return html;
+  }
+
+  html += `<div class="list">`;
+  lista.forEach(c=>{
+    const badge = c.status==='agendada' ? '<span class="badge badge-teal">Agendada</span>'
+                : c.status==='realizada' ? '<span class="badge badge-gold">✓ Realizada</span>'
+                : '<span class="badge badge-muted">Cancelada</span>';
+    const nVinculados = c.status==='realizada' ? contarVinculados(c.id) : 0;
+    html += `
+      <div class="item-card">
+        <div class="item-icon" style="background:var(--teal-tint);">🩺</div>
+        <div class="item-main" onclick="abrirModalConsulta('${c.id}')" style="cursor:pointer;">
+          <p class="item-title">${escapeHtml(especialidadeLabel(c))} ${c.medico?'· '+escapeHtml(c.medico):''}</p>
+          <p class="item-sub">${escapeHtml(c.local)||'Local não informado'}</p>
+          <div class="item-meta">
+            <span>📆 ${formatDateBR(c.data)}${c.hora?' às '+c.hora:''}</span>
+          </div>
+          ${nVinculados>0 ? `<span class="link-badge">📎 ${nVinculados} documento${nVinculados>1?'s':''} vinculado${nVinculados>1?'s':''}</span>` : ''}
+        </div>
+        <div class="item-actions">
+          ${badge}
+          ${c.status==='agendada' ? `<button class="btn btn-sm btn-teal" onclick="marcarRealizada('${c.id}')">Marcar realizada</button>` : ''}
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  return html;
+}
+
+/* ---- lembretes ---- */
+function renderLembretes(pessoa){
+  const todos = state.lembretes.filter(l=>l.personId===pessoa.id);
+  const q = uiState.search.lembretes;
+  const lista = todos.filter(l=>correspondeBusca(q, l.especialidade));
+
+  let html = `
+    <div class="section-header">
+      <div><h2>Lembretes de ${escapeHtml(pessoa.nome)}</h2><p>Defina a frequência ideal para cada especialidade</p></div>
+      <button class="btn btn-primary" onclick="abrirModalLembrete(null)">+ Novo lembrete</button>
+    </div>
+  `;
+
+  if(todos.length===0){
+    html += `<div class="empty-state"><span class="emoji">🔔</span><h3>Nenhum lembrete configurado</h3><p>Configure especialidades como "Dermatologista a cada 6 meses" para nunca esquecer de reagendar.</p><button class="btn btn-teal" onclick="abrirModalLembrete(null)">+ Adicionar lembrete</button></div>`;
+    return html;
+  }
+
+  html += `
+    <div class="search-row">
+      <span class="search-icon">🔎</span>
+      <input class="search-input" id="searchInput_lembretes" type="text" placeholder="Buscar por especialidade..." value="${escapeHtml(q)}" oninput="atualizarBusca('lembretes', this.value)">
+    </div>
+  `;
+
+  if(lista.length===0){
+    html += `<div class="empty-state"><span class="emoji">🔎</span><h3>Nenhum resultado</h3><p>Não encontramos lembretes para "${escapeHtml(q)}".</p><button class="btn btn-ghost" onclick="limparBusca('lembretes')">Limpar busca</button></div>`;
+    return html;
+  }
+
+  const ordenada = [...lista].sort((a,b)=>{
+    const sa = calcularStatusLembrete(a).status, sb = calcularStatusLembrete(b).status;
+    const peso = {atrasado:0, 'sem-registro':1, proximo:2, 'em-dia':3};
+    return peso[sa]-peso[sb];
+  });
+
+  html += `<div class="lembrete-grid">`;
+  ordenada.forEach(l=>{
+    const r = calcularStatusLembrete(l);
+    const badgeMap = {
+      'atrasado': '<span class="badge badge-coral">⏰ Atrasado</span>',
+      'proximo': '<span class="badge badge-gold">🔜 Próximo</span>',
+      'em-dia': '<span class="badge badge-teal">✓ Em dia</span>',
+      'sem-registro': '<span class="badge badge-muted">Sem histórico</span>',
+    };
+    const corBarra = r.status==='atrasado' ? 'var(--coral)' : r.status==='proximo' ? 'var(--gold)' : 'var(--teal)';
+    html += `
+      <div class="lembrete-card">
+        <div class="lembrete-top">
+          <h3>${escapeHtml(l.especialidade)}</h3>
+          ${badgeMap[r.status]}
+        </div>
+        <p class="item-sub">A cada ${l.frequenciaMeses} meses</p>
+        ${r.ultima ? `
+          <p class="item-meta" style="margin:0;">Última: ${formatDateBR(r.ultima)} · Próxima sugerida: ${formatDateBR(r.proxima)}</p>
+          <div class="progress-track"><div class="progress-fill" style="width:${r.percentual}%;background:${corBarra}"></div></div>
+        ` : `<p class="item-meta" style="margin:0;">Nenhuma consulta "realizada" registrada ainda para esta especialidade.</p>`}
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-teal" onclick="agendarApartirDoLembrete('${escapeHtml(l.especialidade)}')">Agendar consulta</button>
+          <button class="btn btn-sm btn-ghost" onclick="abrirModalLembrete('${l.id}')">Editar</button>
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  return html;
+}
+
+/* ---- receitas ---- */
+function renderReceitas(pessoa){
+  const todas = state.receitas.filter(r=>r.personId===pessoa.id).sort((a,b)=>b.data.localeCompare(a.data));
+  const q = uiState.search.receitas;
+  const listaFiltrada = todas.filter(r=>{
+    const consultaTxt = r.consultaId ? (descricaoConsultaVinculada(r.consultaId)||'') : '';
+    return correspondeBusca(q, r.medico, r.medicamentos, r.notas, consultaTxt);
+  });
+
+  let html = `
+    <div class="section-header">
+      <div><h2>Receitas de ${escapeHtml(pessoa.nome)}</h2><p>Guarde fotos e detalhes das prescrições médicas</p></div>
+      <button class="btn btn-primary" onclick="abrirModalReceita(null)">+ Nova receita</button>
+    </div>
+  `;
+
+  if(todas.length===0){
+    html += `<div class="empty-state"><span class="emoji">💊</span><h3>Nenhuma receita guardada</h3><p>Fotografe a próxima receita de ${escapeHtml(pessoa.nome)} para guardar aqui.</p><button class="btn btn-teal" onclick="abrirModalReceita(null)">+ Adicionar receita</button></div>`;
+    return html;
+  }
+
+  html += `
+    <div class="search-row">
+      <span class="search-icon">🔎</span>
+      <input class="search-input" id="searchInput_receitas" type="text" placeholder="Buscar por remédio, médico ou consulta..." value="${escapeHtml(q)}" oninput="atualizarBusca('receitas', this.value)">
+    </div>
+  `;
+
+  if(listaFiltrada.length===0){
+    html += `<div class="empty-state"><span class="emoji">🔎</span><h3>Nenhum resultado</h3><p>Não encontramos receitas para "${escapeHtml(q)}".</p><button class="btn btn-ghost" onclick="limparBusca('receitas')">Limpar busca</button></div>`;
+    return html;
+  }
+
+  html += `<div class="list">`;
+  listaFiltrada.forEach((r,i)=>{
+    const rot = [-3,2,-1,3,-2][i%5];
+    const vinculo = r.consultaId ? descricaoConsultaVinculada(r.consultaId) : null;
+    html += `
+      <div class="item-card">
+        ${r.foto ? `<button class="photo-frame" style="transform:rotate(${rot}deg)" onclick="verFoto('${r.foto}')"><img src="${r.foto}"></button>` : `<div class="photo-placeholder">💊</div>`}
+        <div class="item-main" onclick="abrirModalReceita('${r.id}')" style="cursor:pointer;">
+          <p class="item-title">${escapeHtml(r.medico)||'Médico(a) não informado'}</p>
+          <p class="item-sub">${escapeHtml((r.medicamentos||'').split('\\n')[0])||'Sem detalhes de medicamento'}</p>
+          <div class="item-meta">
+            <span>📆 ${formatDateBR(r.data)}</span>
+            ${r.validade ? `<span>⏳ válida até ${formatDateBR(r.validade)}</span>` : ''}
+          </div>
+          ${vinculo ? `<span class="link-badge">🔗 ${escapeHtml(vinculo)}</span>` : ''}
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  return html;
+}
+
+/* ---- requisições ---- */
+function renderRequisicoes(pessoa){
+  const todas = state.requisicoes.filter(r=>r.personId===pessoa.id).sort((a,b)=>b.data.localeCompare(a.data));
+  const q = uiState.search.requisicoes;
+  const lista = todas.filter(r=>{
+    const consultaTxt = r.consultaId ? (descricaoConsultaVinculada(r.consultaId)||'') : '';
+    return correspondeBusca(q, r.tipoExame, r.medico, r.notas, consultaTxt);
+  });
+
+  let html = `
+    <div class="section-header">
+      <div><h2>Requisições de ${escapeHtml(pessoa.nome)}</h2><p>Pedidos de exames e sua situação</p></div>
+      <button class="btn btn-primary" onclick="abrirModalRequisicao(null)">+ Nova requisição</button>
+    </div>
+  `;
+
+  if(todas.length===0){
+    html += `<div class="empty-state"><span class="emoji">🧾</span><h3>Nenhuma requisição guardada</h3><p>Fotografe o pedido de exame de ${escapeHtml(pessoa.nome)} para acompanhar aqui.</p><button class="btn btn-teal" onclick="abrirModalRequisicao(null)">+ Adicionar requisição</button></div>`;
+    return html;
+  }
+
+  html += `
+    <div class="search-row">
+      <span class="search-icon">🔎</span>
+      <input class="search-input" id="searchInput_requisicoes" type="text" placeholder="Buscar por exame, médico ou consulta..." value="${escapeHtml(q)}" oninput="atualizarBusca('requisicoes', this.value)">
+    </div>
+  `;
+
+  if(lista.length===0){
+    html += `<div class="empty-state"><span class="emoji">🔎</span><h3>Nenhum resultado</h3><p>Não encontramos requisições para "${escapeHtml(q)}".</p><button class="btn btn-ghost" onclick="limparBusca('requisicoes')">Limpar busca</button></div>`;
+    return html;
+  }
+
+  html += `<div class="list">`;
+  lista.forEach((r,i)=>{
+    const rot = [2,-3,1,-1,3][i%5];
+    const badge = r.status==='pendente' ? '<span class="badge badge-gold">Pendente</span>' : '<span class="badge badge-teal">✓ Realizado</span>';
+    const vinculo = r.consultaId ? descricaoConsultaVinculada(r.consultaId) : null;
+    html += `
+      <div class="item-card">
+        ${r.foto ? `<button class="photo-frame" style="transform:rotate(${rot}deg)" onclick="verFoto('${r.foto}')"><img src="${r.foto}"></button>` : `<div class="photo-placeholder">🧾</div>`}
+        <div class="item-main" onclick="abrirModalRequisicao('${r.id}')" style="cursor:pointer;">
+          <p class="item-title">${escapeHtml(r.tipoExame)||'Exame não especificado'}</p>
+          <p class="item-sub">${escapeHtml(r.medico)||'Médico(a) não informado'}</p>
+          <div class="item-meta"><span>📆 ${formatDateBR(r.data)}</span></div>
+          ${vinculo ? `<span class="link-badge">🔗 ${escapeHtml(vinculo)}</span>` : ''}
+        </div>
+        <div class="item-actions">
+          ${badge}
+          <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); alternarStatusRequisicao('${r.id}')">${r.status==='pendente'?'Marcar feito':'Reabrir'}</button>
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  return html;
+}
+
+/* A inicialização agora acontece via auth.onAuthStateChanged(), definido acima:
+   ao detectar login, iniciarSincronizacao() é chamado e ele já dispara render(). */
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((err) => {
+      console.warn('Não foi possível registrar o service worker:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
